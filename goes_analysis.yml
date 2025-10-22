@@ -1,0 +1,12 @@
+name: goes_analysis
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - cartopy
+  - matplotlib
+  - xarray
+  - netcdf4
+  - s3fs
+  - requests
+prefix: /Applications/anaconda3/envs/goes_analysis
