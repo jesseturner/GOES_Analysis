@@ -1,2 +1,4 @@
 *__pycache__*
 *.png
+ABI_spectral_response_functions/*.txt
+ABI_spectral_response_functions/*.dat

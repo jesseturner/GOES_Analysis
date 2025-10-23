@@ -185,3 +185,17 @@ def plot_btd(ds1, ds2, fig_dir, fig_name, extent, plot_title):
 
     _plt_save(fig_dir, fig_name)
     return
+
+def create_formatted_srf(srf_file, filename):
+    """
+    Puts GOES ABI SRF into format used by VIIRS, so it can be used by cris_utils and modtran_utils
+    """
+    srf = np.loadtxt(srf_file)
+    x = srf[:, 0]*1000
+    y = srf[:, 2]
+
+    with open(f"{filename}.dat", "w") as f:
+        for xi, yi in zip(x, y):
+            f.write(f"{xi} {yi}\n")
+
+    return
