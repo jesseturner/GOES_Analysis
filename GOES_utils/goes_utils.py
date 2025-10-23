@@ -5,6 +5,7 @@ import s3fs
 import requests
 import fnmatch
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import cartopy.crs as ccrs
 import cartopy.feature as feature
 import numpy as np
@@ -98,15 +99,23 @@ def get_xy_from_latlon(ds, lats, lons):
     
     return ((min(x), max(x)), (min(y), max(y)))
 
-def get_region_by_lat_lon(ds, latitude_south, latitude_north, longitude_west, longitude_east):
+def get_region_by_lat_lon(ds, extent):
+    """
+    ds : from get_goes_data()
+    extent : lat/lon, [west, east, south, north]
+    """
     ds_lat_lon = calc_latlon(ds)
     #---This is needed to convert the lat/lon range into the x/y dimensions
     #------The dataset will only filter by the official dimensions
-    ((x1,x2), (y1, y2)) = get_xy_from_latlon(ds_lat_lon, (latitude_south, latitude_north), (longitude_west, longitude_east))
+    ((x1,x2), (y1, y2)) = get_xy_from_latlon(ds_lat_lon, (extent[2], extent[3]), (extent[0], extent[1]))
     region = ds_lat_lon.sel(x=slice(x1, x2), y=slice(y2, y1))
     return region
 
-def plot_band_brightness_temp(ds, fig_dir, fig_name, longitude_west, longitude_east, latitude_south, latitude_north):
+def plot_band_brightness_temp(ds, fig_dir, fig_name, extent):
+    """
+    ds : from get_goes_data()
+    extent : lat/lon, [west, east, south, north]
+    """
     wl = round(ds.band_wavelength.values[0],1)
     Tb = (ds.planck_fk2/(np.log((ds.planck_fk1/ds.Rad)+1)) - ds.planck_bc1)/ds.planck_bc2
 
@@ -124,7 +133,7 @@ def plot_band_brightness_temp(ds, fig_dir, fig_name, longitude_west, longitude_e
     clb.set_ticks(custom_ticks)
 
     #--- Remove for full-scan
-    ax.set_extent([longitude_west, longitude_east, latitude_south, latitude_north], crs=ccrs.PlateCarree())
+    ax.set_extent(extent, crs=ccrs.PlateCarree())
 
     ax.set_title("GOES Brightness Temperature ("+ str(wl) +" μm) \n(<datetime> UTC)", fontsize=20, pad=10)
     ax.coastlines(resolution='50m', color='black', linewidth=1)
@@ -138,3 +147,41 @@ def _plt_save(fig_dir, fig_name):
     os.makedirs(f"{fig_dir}", exist_ok=True)
     plt.savefig(f"{fig_dir}/{fig_name}.png", dpi=200, bbox_inches='tight')
     plt.close()
+
+def plot_btd(ds1, ds2, fig_dir, fig_name, extent, plot_title):
+    """
+    ds : from get_goes_data()
+    extent : lat/lon, [west, east, south, north]
+    """
+
+    #--- Calculate BTD, ds1 - ds2
+    wl1 = round(ds1.band_wavelength.values[0],1)
+    Tb1 = (ds1.planck_fk2/(np.log((ds1.planck_fk1/ds1.Rad)+1)) - ds1.planck_bc1)/ds1.planck_bc2
+
+    wl2 = round(ds2.band_wavelength.values[0],1)
+    Tb2 = (ds2.planck_fk2/(np.log((ds2.planck_fk1/ds2.Rad)+1)) - ds2.planck_bc1)/ds2.planck_bc2
+
+    btd = Tb1 - Tb2
+
+    #--- Plot BTD 
+    projection=ccrs.PlateCarree(central_longitude=0)
+    fig,ax=plt.subplots(1, figsize=(12,12),subplot_kw={'projection': projection})
+
+    cmap = mcolors.LinearSegmentedColormap.from_list(
+        "custom_cmap",
+        [(0, "#06BA63"), (0.5, "black"), (1, "white")]
+    )
+    norm = mcolors.TwoSlopeNorm(vmin=-6, vcenter=0, vmax=1.5)
+
+    pcm = plt.pcolormesh(btd.lon, btd.lat, btd, cmap=cmap, norm=norm, shading="nearest")
+
+    clb = plt.colorbar(pcm, shrink=0.6, pad=0.02, ax=ax)
+    clb.ax.tick_params(labelsize=15)
+    clb.set_label('(K)', fontsize=15)
+
+    if extent: ax.set_extent(extent, crs=ccrs.PlateCarree())
+    ax.set_title(plot_title, fontsize=20, pad=10)
+    ax.coastlines(resolution='50m', color='black', linewidth=1)
+
+    _plt_save(fig_dir, fig_name)
+    return
