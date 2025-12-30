@@ -148,7 +148,7 @@ def _plt_save(fig_dir, fig_name):
     plt.savefig(f"{fig_dir}/{fig_name}.png", dpi=200, bbox_inches='tight')
     plt.close()
 
-def plot_btd(ds1, ds2, fig_dir, fig_name, extent, plot_title):
+def plot_btd(ds1, ds2, fig_dir, fig_name, extent, plot_title, custom_cmap_name):
     """
     ds : from get_goes_data()
     extent : lat/lon, [west, east, south, north]
@@ -167,11 +167,8 @@ def plot_btd(ds1, ds2, fig_dir, fig_name, extent, plot_title):
     projection=ccrs.PlateCarree(central_longitude=0)
     fig,ax=plt.subplots(1, figsize=(12,12),subplot_kw={'projection': projection})
 
-    cmap = mcolors.LinearSegmentedColormap.from_list(
-        "custom_cmap",
-        [(0, "#06BA63"), (0.5, "black"), (1, "white")]
-    )
-    norm = mcolors.TwoSlopeNorm(vmin=-6, vcenter=0, vmax=1.5)
+    #--- Select cmap
+    cmap, norm = custom_cmap_selection(custom_cmap_name)
 
     pcm = plt.pcolormesh(btd.lon, btd.lat, btd, cmap=cmap, norm=norm, shading="nearest")
 
@@ -199,3 +196,21 @@ def create_formatted_srf(srf_file, filename):
             f.write(f"{xi} {yi}\n")
 
     return
+
+def custom_cmap_selection(custom_cmap_name):
+    
+    if custom_cmap_name == "green":
+        cmap = mcolors.LinearSegmentedColormap.from_list(
+            "custom_cmap",
+            [(0, "#06BA63"), (0.5, "black"), (1, "white")]
+        )
+        norm = mcolors.TwoSlopeNorm(vmin=-6, vcenter=0, vmax=1.5)
+
+    if custom_cmap_name == "blue":
+        cmap = mcolors.LinearSegmentedColormap.from_list(
+            "custom_cmap",
+            [(0, "#A9A9A9"), (0.5, "white"), (1, "#1167b1")]
+        )
+        norm = mcolors.TwoSlopeNorm(vmin=-3, vcenter=0, vmax=3)
+    
+    return cmap, norm
