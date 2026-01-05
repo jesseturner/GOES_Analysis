@@ -178,7 +178,7 @@ def plot_btd(ds1, ds2, fig_dir, fig_name, extent, plot_title, custom_cmap_name):
 
     if extent: ax.set_extent(extent, crs=ccrs.PlateCarree())
     ax.set_title(plot_title, fontsize=20, pad=10)
-    ax.coastlines(resolution='50m', color='black', linewidth=1)
+    ax.coastlines(resolution='50m', color='white', linewidth=2)
 
     _plt_save(fig_dir, fig_name)
     return
@@ -221,3 +221,7 @@ def custom_cmap_selection(custom_cmap_name):
         norm = mcolors.TwoSlopeNorm(vmin=-3, vcenter=0, vmax=3)
     
     return cmap, norm
+
+def set_plots_dark():
+    plt.style.use('dark_background')
+    return

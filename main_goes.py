@@ -9,6 +9,7 @@ band1, wl1 = '13', 10.3
 band2, wl2 = '07', 3.9
 sat = 'goes19'
 extent=[-73, -57, 33, 46]
+g_utils.set_plots_dark() # all following plots will use dark setting
 
 #--- Open GOES ABI data
 ds1 = g_utils.get_goes_data(band1, sat, year, month, day, hour, ten_minutes)
