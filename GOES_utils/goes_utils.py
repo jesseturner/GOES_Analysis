@@ -212,5 +212,12 @@ def custom_cmap_selection(custom_cmap_name):
             [(0, "#A9A9A9"), (0.5, "white"), (1, "#1167b1")]
         )
         norm = mcolors.TwoSlopeNorm(vmin=-3, vcenter=0, vmax=3)
+
+    if custom_cmap_name == "blueblack":
+        cmap = mcolors.LinearSegmentedColormap.from_list(
+            "custom_cmap",
+            [(0, "#A9A9A9"), (0.5, "black"), (1, "#4baafc")]
+        )
+        norm = mcolors.TwoSlopeNorm(vmin=-3, vcenter=0, vmax=3)
     
     return cmap, norm
